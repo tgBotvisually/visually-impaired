@@ -12,7 +12,7 @@ class YandexTTS:
 
     async def synthesize(self, text, voice: str = 'alena', emotion: str = 'neutral'):
         headers = {
-            # 'Authorization': f'Api-Key {self.iam_key}' #  для IAM токена 12 часов
+            # 'Authorization': f'Bearer {self.iam_key}' #  для IAM токена 12 часов
             'Authorization':f'Api-Key {self.api_key}'  # https://cloud.yandex.ru/docs/speechkit/concepts/auth
         }
 
