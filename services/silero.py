@@ -1,6 +1,5 @@
 import torch
 import soundfile as sf
-from torch import device
 
 
 class Silero:

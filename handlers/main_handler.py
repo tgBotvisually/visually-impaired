@@ -1,9 +1,8 @@
 from aiogram import F, Router
-from aiogram.types import Message,BufferedInputFile
+from aiogram.types import Message, BufferedInputFile
 from aiogram.filters import CommandStart
 
 from services.silero import silero
-
 
 
 router = Router()
