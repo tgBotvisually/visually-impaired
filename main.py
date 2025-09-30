@@ -4,6 +4,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from config import config
+from handlers.main_handler import router
 
 
 async def start_bot():
@@ -12,6 +13,7 @@ async def start_bot():
         default=DefaultBotProperties(parse_mode=ParseMode.HTML)
     )
     dp = Dispatcher(bot=bot)
+    dp.include_router(router=router)
     await dp.start_polling(bot)
 
 
