@@ -34,13 +34,31 @@ class YandexForms:
 
     async def get_form_data(
         self,
-        form_id: str,
+        survey_id: str,
         session: Optional[aiohttp.ClientSession] = None,
     ):
         """
-        Возвращает структуру/вопросы формы по `form_id`.
+        Возвращает структуру/вопросы формы по `survey_id`.
         """
-        pass
+        owns = False
+        if session is None:
+            session = aiohttp.ClientSession()
+            owns = True
+
+        try:
+            url = f'{self.api_base_url}/surveys/{survey_id}/form'
+
+            async with session.get(
+                url,
+                headers=self._headers(),
+            ) as resp:
+                if resp.status == 200:
+                    return await resp.json()
+                else:
+                    return None
+        finally:
+            if owns:
+                await session.close()
 
     async def submit_answers(
         self,
