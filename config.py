@@ -1,4 +1,4 @@
-from pydantic_settings import  BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -20,10 +20,7 @@ class Settings(BaseSettings):
     AUTH_YANDEX_FORMS: str
     FORMS_PUBLIC_API: str
     YAFORMS_BASE_URL: str
-    TELEGRAM_CHAT_ID: str
-    WEBAPP_HOST: str = '::'
-    WEBAPP_PORT: int = 8080
-    YAFORMS_WEBHOOK_PATH: str = '/yandex/forms'
+    TEST_FORM_ID: str
 
 
 config = Settings()

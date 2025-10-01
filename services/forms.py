@@ -1,25 +1,10 @@
 import aiohttp
-import asyncio
 from typing import Optional, Dict
 
 from config import config
 
 
-class YandexForms:
-    """
-    Клиент для работы с Яндекс Формами.
-
-    Поддерживает:
-    - получение списка форм
-    - получение списка вопросов формы
-    - отправку ответов (и экспорт ответов, если требуется получить выгрузку)
-
-    Базовый адрес сервиса Яндекс Формы можно переопределить
-    переменной 'YAFORMS_BASE_URL'
-    Базовый адрес API можно переопределить переменной `FORMS_PUBLIC_API`.
-    Аутентификация: Bearer-токен в переменной окружения `AUTH_YANDEX_FORMS`.
-    """
-
+class BaseYandexForms:
     def __init__(self):
         self.base_url = config.YAFORMS_BASE_URL
         self.api_base_url = config.FORMS_PUBLIC_API
@@ -28,46 +13,7 @@ class YandexForms:
     def _headers(self) -> Dict[str, str]:
         return {
             'Authorization': f'Bearer {self.api_token}',
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
         }
-
-    async def get_form_data(
-        self,
-        survey_id: str,
-        session: Optional[aiohttp.ClientSession] = None,
-    ):
-        """
-        Возвращает структуру/вопросы формы по `survey_id`.
-        """
-        owns = False
-        if session is None:
-            session = aiohttp.ClientSession()
-            owns = True
-
-        try:
-            url = f'{self.api_base_url}/surveys/{survey_id}/form'
-
-            async with session.get(
-                url,
-                headers=self._headers(),
-            ) as resp:
-                if resp.status == 200:
-                    return await resp.json()
-                else:
-                    return None
-        finally:
-            if owns:
-                await session.close()
-
-    async def submit_answers(
-        self,
-        form_id: str,
-        answers: list,
-        session: Optional[aiohttp.ClientSession] = None,
-    ):
-        """Отправляет ответы в форму."""
-        pass
 
     async def _start_export(
         self,
@@ -87,9 +33,10 @@ class YandexForms:
             payload = {'format': format}
             async with session.post(
                 url,
-                json=payload,
                 headers=self._headers(),
+                json=payload,
             ) as resp:
+                print(resp.status)
                 if resp.status == 202:
                     data = await resp.json()
                     return data.get('id')
@@ -141,6 +88,81 @@ class YandexForms:
             ) as resp:
                 if resp.status == 200:
                     return await resp.read()
+        finally:
+            if owns:
+                await session.close()
+
+
+class YandexForms(BaseYandexForms):
+    """
+    Клиент для работы с Яндекс Формами.
+
+    Поддерживает:
+    - получение списка вопросов формы
+    - заполнение формы
+    - выгрузка результатов прохождения формы
+
+    Базовый адрес сервиса Яндекс Формы можно переопределить
+    переменной 'YAFORMS_BASE_URL'
+    Базовый адрес API можно переопределить переменной `FORMS_PUBLIC_API`.
+    Аутентификация: Bearer-токен в переменной окружения `AUTH_YANDEX_FORMS`.
+    """
+
+    async def get_form_data(
+        self,
+        survey_id: str,
+        session: Optional[aiohttp.ClientSession] = None,
+    ):
+        """
+        Возвращает структуру/вопросы формы по `survey_id`.
+        """
+        owns = False
+        if session is None:
+            session = aiohttp.ClientSession()
+            owns = True
+
+        try:
+            url = f'{self.api_base_url}/surveys/{survey_id}/form'
+
+            async with session.get(
+                url,
+                headers=self._headers(),
+            ) as resp:
+                if resp.status == 200:
+                    return await resp.json()
+                else:
+                    error_text = await resp.text()
+                    raise Exception(f"Error {resp.status}: {error_text}")
+        finally:
+            if owns:
+                await session.close()
+
+    async def fill_the_form(
+        self,
+        survey_id: str,
+        answers: Dict,
+        session: Optional[aiohttp.ClientSession] = None,
+    ):
+        """Отправляет ответы в форму."""
+        owns = False
+        if session is None:
+            session = aiohttp.ClientSession()
+            owns = True
+
+        try:
+            url = f'{self.api_base_url}/surveys/{survey_id}/form'
+
+            async with session.post(
+                url,
+                json=answers,
+                headers=self._headers(),
+            ) as resp:
+                if resp.status == 200:
+                    return True
+                else:
+                    error_text = await resp.text()
+                    raise Exception(f"Error {resp.status}: {error_text}")
+
         finally:
             if owns:
                 await session.close()
