@@ -1,4 +1,5 @@
 import torch
+import io
 import soundfile as sf
 
 
@@ -24,8 +25,12 @@ class Silero:
         )
         self.stt_model.to(self.device)
 
-    def text_to_speech(self, text: str, speaker: str = 'aidar',
-                       sample_rate: int = 48000, output_file: str = 'output.wav'):
+    def text_to_speech(self,
+                       text: str,
+                       speaker: str = 'xenia',
+                       sample_rate: int = 48000,
+                       subtype: str = 'OPUS',
+                       format_audio: str = 'OGG'):
         torch.set_num_threads(4)
 
         audio = self.tts_model.apply_tts(
@@ -34,9 +39,17 @@ class Silero:
             sample_rate=sample_rate
         )
 
-        sf.write(output_file, audio, sample_rate)
+        audio_buffer = io.BytesIO()
+        sf.write(
+            audio_buffer,
+            audio,
+            sample_rate,
+            format=format_audio,
+            subtype=subtype
+        )
+        audio_buffer.seek(0)
 
-        return output_file
+        return audio_buffer.getvalue()
 
 
 silero = Silero()
