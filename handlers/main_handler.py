@@ -1,27 +1,59 @@
 from aiogram import F, Router
-from aiogram.types import Message, BufferedInputFile
-from aiogram.filters import CommandStart
+from aiogram.types import Message
+from aiogram.filters import CommandStart, CommandObject
 
-from services.silero import silero
-
-
+from keyboard.reply_kb import MainKb
+from utils.handlers_util import send_voice_message, get_form_id
+from utils.lexicon import text, BUTTONS
+# from services.forms import YandexForms
+# from config import config
 router = Router()
 
 
 @router.message(CommandStart())
-async def cmd_start(message: Message):
-    await message.answer('Тг бот для речи')
+async def cmd_start(message: Message, command: CommandObject):
+    # if command.args:
+    #     await another_algorithm(form_id=command.args)
+    #     если мы переходим по ссылке f'https://t.me/{me.username}?start={form_id}'
+    #     действия бота уже идут к заполнению формы
+    await send_voice_message(message, text['help'],'help.wav', BUTTONS['start'])
 
 
-@router.message(F.text)
-async def text_handler(message: Message):
-    text = message.text
+@router.message(F.text == 'Продолжить')
+async def continue_handler(message: Message):
+    await send_voice_message(message, text['instruction'],'instruction.wav', BUTTONS['forms'])
 
-    output_file = "output.wav"
-    speech_file = silero.text_to_speech(text=text, output_file=output_file)
 
-    with open(speech_file, 'rb') as f:
-        audio_data = f.read()
+@router.message(F.text == 'Политика конфиденциальности')
+async def privacy_handler(message: Message):
+    await send_voice_message(message, text['privacy'],'privacy.wav', BUTTONS['forms'])
 
-    voice_input_file = BufferedInputFile(audio_data, filename="voice.ogg")
-    await message.answer_voice(voice=voice_input_file)
+
+@router.message(F.text.contains('forms.yandex.ru'))
+async def get_url_handler(message: Message):
+    me = await message.bot.get_me()
+    form_id = get_form_id(message.text)
+    await message.answer(
+        f'Ваша ссылка: https://t.me/{me.username}?start={form_id}',
+        reply_markup=MainKb(BUTTONS['forms']).get_keyboard()
+    )
+
+
+@router.message(F.text == 'Создать ссылку')
+async def create_form_handler(message: Message):
+    await message.answer(text=text['primer'])
+
+
+
+@router.message(F.text == 'Открыть форму')
+async def get_form_handler(message: Message):
+    await message.answer(text=text['open_form'])
+
+
+
+@router.message(F.text == 'Да')
+async def forms_question_handler(message: Message):
+    # тут приходят вопросы пошагово
+    pass
+
+
