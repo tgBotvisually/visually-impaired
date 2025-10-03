@@ -1,8 +1,9 @@
 import aiohttp
 from typing import Optional, Dict
 
-from .models import FormData
+from .models import FormData, Validation
 from config import config
+from pprint import pprint
 
 
 class BaseYandexForms:
@@ -131,6 +132,7 @@ class YandexForms(BaseYandexForms):
             ) as resp:
                 if resp.status == 200:
                     data = await resp.json()
+                    pprint(data)
                     return FormData(**data)
                 else:
                     error_text = await resp.text()
@@ -233,8 +235,13 @@ class YandexForms(BaseYandexForms):
 
         return question_map
 
+    @staticmethod
+    def has_required_validation(validations: list[Validation]) -> bool:
+        return any(item.type == 'required' for item in validations)
+
     def questions_count(self, form_data: FormData) -> int:
         return len(self.get_all_question_labels(form_data))
+
 
 
 ya_forms = YandexForms()

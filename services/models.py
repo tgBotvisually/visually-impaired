@@ -34,6 +34,7 @@ class FormItem(BaseModel):
     validations: Optional[List[Validation]] = None
     conditions: Optional[List[Condition]] = None
     multiline: Optional[bool] = None
+    comment: Optional[str] = None
 
 
 class Page(BaseModel):
@@ -49,8 +50,8 @@ class Texts(BaseModel):
 class FormData(BaseModel):
     id: str
     name: str
-    teaser: bool
-    footer: bool
-    iframe: bool
+    teaser: Optional[bool] = None
+    footer: Optional[bool] = None
+    iframe: Optional[bool] = None
     texts: Texts
     pages: List[Page]

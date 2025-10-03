@@ -56,8 +56,9 @@ async def forms_question_handler(message: Message):
 
 @router.message(F.text == 'Открыть форму')
 async def get_form_handler(message: Message, state: FSMContext):
-    form_id = state.get_data('form_id')
-    form_data = await ya_forms.get_form_data(form_id)
+    data = await state.get_data()
+    form_id = data.get('form_id')
+    form_data = await ya_forms.get_form_data(str(form_id))
 
     response_text = (
         f"📋 Вы открыли форму \"{form_data.name}\"\n"
@@ -69,14 +70,24 @@ async def get_form_handler(message: Message, state: FSMContext):
     question_number = 1
     for page in form_data.pages:
         for item in page.items:
-            response_text += f"• {item.label}\n"
-            question_number += 1
-
+            if not item.hidden:
+                response_text += f'{question_number}. – {item.label}'
+                if item.validations and ya_forms.has_required_validation(
+                    item.validations
+                ):
+                    response_text += '(Обязательное поле)'
+                response_text += '\n'
+                if item.comment:
+                    response_text += f'<i>{item.comment}</i>\n'
+                response_text += '\n'
+                question_number += 1
+    response_text += text['please']
     await state.update_data(form_data=form_data)
 
-    await message.answer(
-        text=response_text,
-        reply_markup=MainKb(['Заполнить форму', 'Инструкция']).get_keyboard()
+    await send_voice_message(
+        message, response_text,
+        f'{form_data.name}.wav',
+        ['Заполнить форму', 'Инструкция']
     )
 
 @router.message(F.text == 'Заполнить форму')
