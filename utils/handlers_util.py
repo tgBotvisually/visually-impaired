@@ -4,7 +4,10 @@ from aiogram.types import Message, BufferedInputFile
 from keyboard.reply_kb import MainKb
 
 
-async def send_voice_message(message: Message, text: str, filename: str, keyboard_buttons: list):
+async def send_voice_message(message: Message,
+                             text: str,
+                             filename: str,
+                             keyboard_buttons: list):
     audio_bytes = silero.text_to_speech(text=text)
 
     voice_input_file = BufferedInputFile(audio_bytes, filename=filename)

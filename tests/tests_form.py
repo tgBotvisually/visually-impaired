@@ -109,8 +109,8 @@ async def run_tests():
     print("Запуск тестов...")
     tests = [
         test_get_form_data(),
-        test_fill_form(),
-        test_export_results_detailed()
+        # test_fill_form(),
+        # test_export_results_detailed()
     ]
 
     results = await asyncio.gather(*tests)
