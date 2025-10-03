@@ -1,6 +1,7 @@
 import aiohttp
 from typing import Optional, Dict
 
+from .models import FormData
 from config import config
 
 
@@ -129,7 +130,8 @@ class YandexForms(BaseYandexForms):
                 headers=self._headers(),
             ) as resp:
                 if resp.status == 200:
-                    return await resp.json()
+                    data = await resp.json()
+                    return FormData(**data)
                 else:
                     error_text = await resp.text()
                     raise Exception(f"Error {resp.status}: {error_text}")
@@ -174,7 +176,7 @@ class YandexForms(BaseYandexForms):
         session: Optional[aiohttp.ClientSession] = None,
     ):
         """
-        Экспорт ответов. format in ('json', 'csv', 'xlsx')
+        Экспорт ответов. format in ('csv', 'xlsx')
         Возвращает bytes содержимое файла.
         """
         owns = False
@@ -206,3 +208,33 @@ class YandexForms(BaseYandexForms):
         finally:
             if owns:
                 await session.close()
+
+    @staticmethod
+    def get_all_question_labels(form_data: FormData) -> list[str]:
+        question_labels = []
+        for page in form_data.pages:
+            for item in page.items:
+                question_labels.append(item.label)
+        return question_labels
+
+    @staticmethod
+    def get_question_mapping(form_data: FormData) -> dict:
+        question_map = {}
+
+        for page in form_data.pages:
+            for item in page.items:
+                if item.type == 'enum' and item.items:
+                    options = [option.label for option in item.items]
+                    question_map[item.label] = options
+                elif item.type == 'string':
+                    question_map[item.label] = "Введите текст"
+                else:
+                    question_map[item.label] = []
+
+        return question_map
+
+    def questions_count(self, form_data: FormData) -> int:
+        return len(self.get_all_question_labels(form_data))
+
+
+ya_forms = YandexForms()
