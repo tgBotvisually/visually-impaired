@@ -20,7 +20,7 @@ from utils.form_utils import (FormNavigation,
                               is_required)
 from states.states import FormFilling
 
-from pprint import pprint
+# from pprint import pprint
 from datetime import datetime
 import re
 
@@ -219,7 +219,7 @@ async def process_answer(message: Message, state: FSMContext):
 
         is_last = next_index == total_questions - 1
         keyboard = get_keyboard_for_question(False, is_last)
-        pprint(answers)
+        # pprint(answers)
 
         await send_voice_message(
             message, QUESTION_OK + question_text,
