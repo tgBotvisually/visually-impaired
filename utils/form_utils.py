@@ -75,12 +75,28 @@ def format_question_text(question: FormItem, question_number: int,
     if question.comment:
         question_text += f"<i>{question.comment}</i>\n"
 
+    # Вопрос с выбором варианта (enum)
     if question.type == 'enum' and question.items:
         question_text += "\nВарианты ответов:\n"
         for i, option in enumerate(question.items, 1):
             question_text += f"{i}. {option.label}\n"
-        question_text += "\nНапишите номер выбранного варианта"
 
+        # Инструкция в зависимости от типа виджета
+        if question.widget == 'radio':
+            question_text += "\nНапишите номер одного выбранного варианта"
+        elif question.widget == 'checkbox':
+            question_text += "\nНапишите номера выбранных вариантов через пробел (например: 1 3 5)"
+        else:  # по умолчанию
+            question_text += "\nНапишите номер выбранного варианта"
+
+    # Булевый вопрос (флажок)
+    elif question.type == 'boolean':
+        question_text += "\nОтветьте 'да' или 'нет'"
+
+    elif question.type == 'date':
+        question_text += "\nВведите дату в формате ДД.ММ.ГГГГ (например: 01.01.2023)"
+
+    # Текстовый вопрос
     elif question.type == 'string':
         if question.multiline:
             question_text += "\n(введите текст, можно несколько строк)"
@@ -136,9 +152,9 @@ def get_keyboard_for_question(is_first: bool, is_last: bool) -> list:
     if is_first:
         return ['Заполнить форму']
     elif is_last:
-        return ['Изменить прошлый ответ', 'Показать все ответы']
+        return ['Назад', 'Показать все ответы']
     else:
-        return ['Изменить прошлый ответ']
+        return ['Назад']
 
 
 def get_intro_form_header(title: str, company: str, questions_count: int):

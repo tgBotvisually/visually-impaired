@@ -132,6 +132,7 @@ class YandexForms(BaseYandexForms):
             ) as resp:
                 if resp.status == 200:
                     data = await resp.json()
+                    pprint(data)
                     return FormData(**data)
                 else:
                     error_text = await resp.text()
