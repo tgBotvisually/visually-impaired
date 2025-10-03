@@ -243,5 +243,4 @@ class YandexForms(BaseYandexForms):
         return len(self.get_all_question_labels(form_data))
 
 
-
 ya_forms = YandexForms()
