@@ -219,7 +219,7 @@ async def process_answer(message: Message, state: FSMContext):
 
         is_last = next_index == total_questions - 1
         keyboard = get_keyboard_for_question(False, is_last)
-        # pprint(answers)
+
 
         await send_voice_message(
             message, QUESTION_OK + question_text,
@@ -239,7 +239,7 @@ async def process_answer(message: Message, state: FSMContext):
         confirmation_text = await format_confirmation_message(
             form_data, answers
         )
-        pprint(answers)
+
         await send_voice_message(
             message, confirmation_text,
             'done.wav',
