@@ -60,7 +60,7 @@ async def get_form_handler(message: Message, state: FSMContext):
     form_data = await ya_forms.get_form_data(form_id)
 
     response_text = (
-        f"📋 Вы открыли форму \"{form_data['name']}\"\n"
+        f"📋 Вы открыли форму \"{form_data.name}\"\n"
         f"🏢 Отправитель: {COMPANY}'\n"
         f"❓ Количество вопросов: {ya_forms.questions_count(form_data)}\n"
         f"\nВопросы:\n"
