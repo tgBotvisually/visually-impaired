@@ -1,9 +1,9 @@
 import aiohttp
 from typing import Optional, Dict
 
-from .models import FormData, Validation
+from .models import FormData
 from config import config
-from pprint import pprint
+# from pprint import pprint
 
 
 class BaseYandexForms:
@@ -38,7 +38,6 @@ class BaseYandexForms:
                 headers=self._headers(),
                 json=payload,
             ) as resp:
-                print(resp.status)
                 if resp.status == 202:
                     data = await resp.json()
                     return data.get('id')
@@ -132,7 +131,7 @@ class YandexForms(BaseYandexForms):
             ) as resp:
                 if resp.status == 200:
                     data = await resp.json()
-                    pprint(data)
+                    # pprint(data)
                     return FormData(**data)
                 else:
                     error_text = await resp.text()
