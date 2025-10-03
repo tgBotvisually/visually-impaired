@@ -15,7 +15,8 @@ from utils.form_utils import (FormNavigation,
                               create_answer_structure,
                               format_confirmation_message,
                               get_keyboard_for_question,
-                              get_intro_form_header)
+                              get_intro_form_header,
+                              is_required)
 from states.states import FormFilling
 
 
@@ -25,9 +26,9 @@ router = Router()
 @router.message(CommandStart())
 async def cmd_start(message: Message, command: CommandObject):
     # if command.args:
-    #     await another_algorithm(form_id=command.args)
-    #     если мы переходим по ссылке f'https://t.me/{me.username}?start={form_id}'
-    #     действия бота уже идут к заполнению формы
+        # form_id = command.args
+        # await get_form_handler(form_id)
+
     await send_voice_message(message, HELP_TEXT,
                              'help.wav', BUTTONS['start'])
 
@@ -62,22 +63,17 @@ async def create_form_handler(message: Message):
     await message.answer(text=FORM_EXAMPLE)
 
 
-# @router.message(F.text == 'Да')
-# async def forms_question_handler(message: Message):
-#     # тут приходят вопросы пошагово
-#     pass
-
-
 @router.message(F.text == 'Открыть форму')
 async def get_form_handler(message: Message, state: FSMContext):
     data = await state.get_data()
     form_id = data.get('form_id')
     form_data = await ya_forms.get_form_data(str(form_id))
+    form_nav = FormNavigation(form_data)
 
     response_text = get_intro_form_header(
         title=form_data.name,
         company=COMPANY,
-        questions_count=ya_forms.questions_count(form_data)
+        questions_count=form_nav.get_total_questions()
     )
 
     question_number = 1
@@ -85,9 +81,7 @@ async def get_form_handler(message: Message, state: FSMContext):
         for item in page.items:
             if not item.hidden:
                 response_text += f'{question_number}. {item.label}'
-                if item.validations and ya_forms.has_required_validation(
-                    item.validations
-                ):
+                if item.validations and is_required(item.validations):
                     response_text += REQUIRED_FIELD
                 response_text += '\n'
                 if item.comment:

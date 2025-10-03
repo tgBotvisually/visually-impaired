@@ -1,5 +1,5 @@
 from typing import Dict, List, Tuple
-from services.models import FormData, FormItem
+from services.models import FormData, FormItem, Validation
 # from aiogram.fsm.context import FSMContext
 
 
@@ -55,6 +55,10 @@ class FormNavigation:
     def get_total_questions(self) -> int:
         """Возвращает общее количество вопросов"""
         return len(self.visible_questions)
+
+
+def is_required(validations: list[Validation]) -> bool:
+    return any(item.type == 'required' for item in validations)
 
 
 def format_question_text(question: FormItem, question_number: int,
