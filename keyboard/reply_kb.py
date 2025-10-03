@@ -10,7 +10,7 @@ class ReplyBuilder:
     def __init__(self):
         self.keyboard = ReplyKeyboardBuilder()
 
-    def add_buttons(self, buttons: list[str] | tuple[str]) -> None:
+    def add_buttons(self, buttons) -> None:
         for button in buttons:
             self.keyboard.add(KeyboardButton(text=button))
 
