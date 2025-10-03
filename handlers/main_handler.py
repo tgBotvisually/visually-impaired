@@ -5,16 +5,20 @@ from aiogram.fsm.context import FSMContext
 
 from keyboard.reply_kb import MainKb
 from utils.handlers_util import send_voice_message, get_form_id
-from utils.lexicon import text, BUTTONS, COMPANY
+from utils.constants import (INSTRUCTION_TEXT, HELP_TEXT, PRIVACY_TEXT,
+                             FORM_EXAMPLE, PLEASE_COMPLETE,
+                             REQUIRED_FIELD, BUTTONS, COMPANY)
 from services.forms import ya_forms
 from services.models import FormItem
 from utils.form_utils import (FormNavigation,
                               format_question_text,
                               create_answer_structure,
-                              format_confirmation_message, 
-                              get_keyboard_for_question)
+                              format_confirmation_message,
+                              get_keyboard_for_question,
+                              get_intro_form_header)
 from states.states import FormFilling
-# from config import config
+
+
 router = Router()
 
 
@@ -24,19 +28,19 @@ async def cmd_start(message: Message, command: CommandObject):
     #     await another_algorithm(form_id=command.args)
     #     если мы переходим по ссылке f'https://t.me/{me.username}?start={form_id}'
     #     действия бота уже идут к заполнению формы
-    await send_voice_message(message, text['help'],
+    await send_voice_message(message, HELP_TEXT,
                              'help.wav', BUTTONS['start'])
 
 
 @router.message(F.text == 'Продолжить')
 async def continue_handler(message: Message):
-    await send_voice_message(message, text['instruction'],
+    await send_voice_message(message, INSTRUCTION_TEXT,
                              'instruction.wav', BUTTONS['forms'])
 
 
 @router.message(F.text == 'Политика конфиденциальности')
 async def privacy_handler(message: Message):
-    await send_voice_message(message, text['privacy'],
+    await send_voice_message(message, PRIVACY_TEXT,
                              'privacy.wav', BUTTONS['forms'])
 
 
@@ -55,7 +59,7 @@ async def get_url_handler(message: Message, state: FSMContext):
 
 @router.message(F.text == 'Создать ссылку')
 async def create_form_handler(message: Message):
-    await message.answer(text=text['primer'])
+    await message.answer(text=FORM_EXAMPLE)
 
 
 # @router.message(F.text == 'Да')
@@ -70,11 +74,10 @@ async def get_form_handler(message: Message, state: FSMContext):
     form_id = data.get('form_id')
     form_data = await ya_forms.get_form_data(str(form_id))
 
-    response_text = (
-        f"📋 Вы открыли форму \"{form_data.name}\"\n"
-        f"🏢 Отправитель: {COMPANY}'\n"
-        f"❓ Количество вопросов: {ya_forms.questions_count(form_data)}\n"
-        f"\nВопросы:\n"
+    response_text = get_intro_form_header(
+        title=form_data.name,
+        company=COMPANY,
+        questions_count=ya_forms.questions_count(form_data)
     )
 
     question_number = 1
@@ -85,19 +88,19 @@ async def get_form_handler(message: Message, state: FSMContext):
                 if item.validations and ya_forms.has_required_validation(
                     item.validations
                 ):
-                    response_text += ' (Обязательное поле)'
+                    response_text += REQUIRED_FIELD
                 response_text += '\n'
                 if item.comment:
                     response_text += f'<i>{item.comment}</i>\n'
                 response_text += '\n'
                 question_number += 1
-    response_text += text['please']
+    response_text += PLEASE_COMPLETE
     await state.update_data(form_data=form_data)
 
     await send_voice_message(
         message, response_text,
         f'{form_data.name}.wav',
-        ['Заполнить форму', 'Инструкция']
+        BUTTONS['form_intro']
     )
 
 

@@ -135,3 +135,12 @@ def get_keyboard_for_question(is_first: bool, is_last: bool) -> list:
         return ['Изменить прошлый ответ', 'Показать все ответы']
     else:
         return ['Изменить прошлый ответ']
+
+
+def get_intro_form_header(title: str, company: str, questions_count: int):
+    return (
+        f"📋 Вы открыли форму \"{title}\"\n"
+        f"🏢 Отправитель: {company}'\n"
+        f"❓ Количество вопросов: {questions_count}\n"
+        f"\nВопросы:\n"
+    )
